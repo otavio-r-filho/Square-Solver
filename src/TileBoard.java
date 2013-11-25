@@ -23,7 +23,7 @@ public class TileBoard{
 	public TileBoard(Integer[][] board, int g){
       myBoard = board;
       this.g = g;
-      this.f = this.calcManhattanDistance();
+      this.f = this.calcManhattanDistance() + g;
 	}
 	
 	public int getG(){
