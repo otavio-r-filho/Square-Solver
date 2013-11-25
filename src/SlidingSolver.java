@@ -9,7 +9,7 @@ public class SlidingSolver{
 		// Initialize queues
 		closedList = new ArrayList<TileBoard>();
 		openList = new ArrayList<TileBoard>();
-		Integer[][] initialBoardMatrix = new Integer[][]{{1, 2, 3}, {4, 0, 5}, {7, 8, 6}};
+		Integer[][] initialBoardMatrix = puzzle;
 		openList.add(new TileBoard(initialBoardMatrix, 0));
 		
 		// Print initial board
@@ -124,4 +124,11 @@ public class SlidingSolver{
 		}
 		return 1;
 	}
+	
+	public SlidingSolution solvePuzzleBFS() {
+		SlidingSolution solution;
+		
+		return solution;
+	}
+	
 }
