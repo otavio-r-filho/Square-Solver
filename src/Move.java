@@ -1,3 +1,4 @@
+//Testando mudanças
 public class Move{
 	public static final int LEFT = 0;
 	public static final int UP = 1;
