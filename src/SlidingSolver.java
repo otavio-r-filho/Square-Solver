@@ -5,7 +5,7 @@ public class SlidingSolver{
 	private static List<TileBoard> closedList;
 	private static List<TileBoard> openList;
 
-	public SlidingSolver(){
+	public SlidingSolver(Integer[][] puzzle){
 		// Initialize queues
 		closedList = new ArrayList<TileBoard>();
 		openList = new ArrayList<TileBoard>();

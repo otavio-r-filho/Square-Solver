@@ -17,7 +17,7 @@ public class SlidingSolverDriver
 
 	public static void main(String[] args)
 	{
-		String puzzle = "123405786";
+		Integer[][] puzzle = new Integer [][] {{1, 2, 3}, {4, 0, 5}, {7, 8, 6}};
 		SlidingSolution solution = new SlidingSolver(puzzle).solvePuzzleBFS();
 		System.out.println(solution.getMoves());
 	}
