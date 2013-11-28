@@ -1,73 +1,85 @@
 import java.util.*;
 
 public class SlidingSolver{
-	private static int maxDepth = 26;
+	// Max depth of the algorithm
+	private static int maxDepth = 50;
 	private static List<TileBoard> closedList;
 	private static List<TileBoard> openList;
 
-	public SlidingSolver(Integer[][] puzzle){
-		// Initialize queues
+	public SlidingSolver(){
+		// Initialize queues and puzzle
 		closedList = new ArrayList<TileBoard>();
 		openList = new ArrayList<TileBoard>();
-		Integer[][] initialBoardMatrix = puzzle;
-		openList.add(new TileBoard(initialBoardMatrix, 0));
-		
+		//Integer[][] initialBoardMatrix = new Integer[][]{{1, 4, 2}, {3, 7, 5}, {6, 8, 0}};
+		Integer[][] initialBoardMatrix = new Integer[][]{{0, 4, 2}, {1, 3, 7}, {6, 8, 5}};
+		openList.add(new TileBoard(initialBoardMatrix, 0, null));
+
 		// Print initial board
 		System.out.println("The initial board is:");
-		int i, j;
-		for (i = 0; i < 3; i++){
-			for (j = 0; j < 2; j++){
-				System.out.print(initialBoardMatrix[i][j] + "|");
-			}
-			System.out.println(initialBoardMatrix[i][j]);
-		}
+		openList.get(0).printBoard();
 		
 		// Solve board
 		solveAStar();
 	}
-
+	
 	/* Solves the puzzle by performing an A* search over the puzzle space */
 	public void solveAStar(){
 		TileBoard finalBoard = null;
+		boolean tooDeep = false;
 
-		while (!openList.isEmpty()&&(finalBoard == null)){
-			// Get next board to be analyzed
+        // While there are still moves to do, and the goal hasn't been achieved, search
+		while (!openList.isEmpty()&&(finalBoard == null)&&(!tooDeep)){
+			// Get next board to be analyzed (from the openList) and add it to the closedList
 			TileBoard currentBoard = getSmallestCostBoard();
+			System.out.println("Cost so far: "+currentBoard.getG());
+			System.out.println("Using smallest:");
+			currentBoard.printBoard();
 			closedList.add(currentBoard);
 			
-			// Check if reached goal state
+			// Check if reached goal state or reached max number of moves
 			if (currentBoard.calcManhattanDistance() == 0){
+				System.out.println("FOUND SOLUTION!");
 				finalBoard = currentBoard;
 			}
-
-			// Check all neighbors
-			List<TileBoard> neighbors = currentBoard.getNextBoards();
-			for (int i = 0; i < neighbors.size(); i++){
-				TileBoard neighbor = neighbors.get(i);
-				
-				// Check if neighbor is in closedList
-				if (searchBoard(neighbor, 1) >= 0){
-					continue;
-				}
-				
-				// If not explored yet, check if neighbor is in openList
-				int boardPosition = searchBoard(neighbor, 0);
-				// If it's not in openList, add it to it
-				if (boardPosition == -1){
-					openList.add(neighbor);
-				}
-				else{
-					// Else, check if it's F is smaller than the previous one
-					if (neighbor.getF() < openList.get(boardPosition).getF()){
-						// If so, update F
-						openList.get(boardPosition).setG(neighbor.getG());
-						openList.get(boardPosition).setF(neighbor.getF());
-					}
-				}
+			else{
+			  if (currentBoard.getG() > maxDepth){
+				  tooDeep = true;
+			  }
+			  else{
+				  // If it hasn't, check all possible moves (neighbors) from that state
+				  List<TileBoard> neighbors = currentBoard.getNextBoards();
+					System.out.println("Possible moves: "+neighbors.size());
+				  for (int i = 0; i < neighbors.size(); i++){
+					  TileBoard neighbor = neighbors.get(i);
+						neighbor.printBoard();
+					
+					  // Check if neighbor is in closedList
+					  // If so, get next board, as it has already been analysed
+					  if (searchBoard(neighbor, 1) >= 0){
+						  continue;
+					  }
+					
+					  // If not explored yet, check if neighbor is in openList
+					  int boardPosition = searchBoard(neighbor, 0);
+					  // If it's not in openList, add it to it
+					  if (boardPosition == -1){
+						  openList.add(neighbor);
+					  }
+					  else{
+						  // Else, check if it's F is smaller than the previous one
+						  if (neighbor.getF() < openList.get(boardPosition).getF()){
+							  // If so, update F
+							  openList.get(boardPosition).setG(neighbor.getG());
+							  openList.get(boardPosition).setF(neighbor.getF());
+						  }
+					  }
+				  }
+			  }
 			}
 		}
 		
-		if (finalBoard == null){
+		// Show solution, if it exists
+		if (finalBoard != null){
 			showSolution(finalBoard.getMoves());
 		}
 		else{
@@ -75,7 +87,9 @@ public class SlidingSolver{
 		}
 	}
 	
+	/* Search closed or open list based on the listNum argument for a given tileboard */
 	public int searchBoard(TileBoard searched, int listNum){
+		// Search on openList
 		if (listNum == 0){
 			for (int i = 0; i < openList.size(); i++){
 				if (equalBoards(openList.get(i), searched) == 1){
@@ -83,6 +97,7 @@ public class SlidingSolver{
 				}
 			}
 		}
+		// Search on closedList
 		else{
 			for (int i = 0; i < closedList.size(); i++){
 				if (equalBoards(closedList.get(i), searched) == 1){
@@ -94,6 +109,7 @@ public class SlidingSolver{
 		return -1;
 	}
 	
+	/* Get smallest cost board from the open list */
 	public TileBoard getSmallestCostBoard(){
 		int smallestI = 0;
 		for (int i = 0; i < openList.size(); i++){
@@ -104,14 +120,34 @@ public class SlidingSolver{
 		return openList.remove(smallestI);
 	}
 
+  /* Show all moves needed to solve the board */
 	private void showSolution(List<Move> moveList){
 		System.out.println("Moves needed to solve board:");
 		for (int i = 0; i < moveList.size(); i++){
-			System.out.print(moveList.get(i) + " ");
+			if (i%10 == 9){
+				System.out.println();
+			}
+			String direction;
+			switch(moveList.get(i).getDirection()){
+			case (Move.UP):
+				direction = "UP";
+				break;
+			case (Move.LEFT):
+				direction = "LEFT";
+				break;
+			case (Move.DOWN):
+				direction = "DOWN";
+				break;
+			default:
+				direction = "RIGHT";
+				break;
+			}
+			System.out.print(direction + " ");
 		}
 		System.out.println();
 	}
 
+  /* Compare two boards to check if they're equal */
 	public int equalBoards(TileBoard a, TileBoard b){
 		Integer[][] aMatrix = a.getBoardMatrix();
 		Integer[][] bMatrix = b.getBoardMatrix();
@@ -124,11 +160,4 @@ public class SlidingSolver{
 		}
 		return 1;
 	}
-	
-	public SlidingSolution solvePuzzleBFS() {
-		SlidingSolution solution;
-		
-		return solution;
-	}
-	
 }
